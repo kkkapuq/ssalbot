@@ -1,4 +1,4 @@
-const APIkey = "Z1j3BGGZmtlFXXQ16umx15lILiiHsOld"
+const APIkey = "yourkey"
 
 var dnf = 'https://api.neople.co.kr/df/auction'
 
