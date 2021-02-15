@@ -34,6 +34,22 @@ app.use('/api', apiRouter);
 
 //응답 예제
 apiRouter.post('/sayHello', function (req, res) {
+
+  // var itemName = msg.split("/")[0];
+  var itemName = '생명의 숨결';
+  itemName = encodeURI(itemName);
+  var url = 'https://api.neople.co.kr/df/auction?itemName=' + itemName + '&apikey=Z1j3BGGZmtlFXXQ16umx15lILiiHsOld';
+
+  fetch(url, options)
+  .then((response) => console.log("response:", response))
+  .catch((error) => console.log("error:", error))
+
+  // var data = org.jsoup.Jsoup.connect(url).get();
+  // data = JSON.parse(data);
+
+
+
+
   const responseBody = {
     version: "2.0",
     template: {
