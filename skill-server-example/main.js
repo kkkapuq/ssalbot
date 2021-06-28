@@ -279,6 +279,7 @@ function findChar(serverName, charName, replier) {
     var data = org.jsoup.Jsoup.connect(url).ignoreContentType(true).get().text();
     var damage = "";
     var buff = "";
+    var resultString = "";
 
     data = JSON.parse(data);
 
@@ -304,25 +305,37 @@ function findChar(serverName, charName, replier) {
         //         .text();
 
         
-        data = org.jsoup.Jsoup.connect(dunfaoffUrl).ignoreContentType(true).get().text();
-        // data = JSON.parse(data);
-        data = data.select("div.card-body");
+        data = org.jsoup.Jsoup.connect(dunfaoffUrl).ignoreContentType(true).get();
 
-        replier.reply(data);
+        var jobData = data.select("div.card-footer a span").attr("data-jobgrowname");
+        // replier.reply(jobData);
+        resultString += "직업 : " + jobData + '\n';
 
-        var bufferYn = data.select("#holy_buff");
-        if(isEmpty(bufferYn)){
-            var temp = data.select("div.buffRow");
-        } else {
-            var temp = data.select("div.holyBuffTable");
-            var temp2 = temp.select("div.buffRows");
-            replier.reply(temp);
+        data = data.select("div.card-footer a span").text();
+        // replier.reply(data);
+
+        damage = data.split("B")[0];
+        // replier.reply(damage);
+
+        if(!isEmpty(damage)){
+            damage.replace(" ", "");
+            resultString += "딜(오즈마 1시) : " + damage + '\n';
+        }
+        buff = data.split("B")[1];
+        // replier.reply(buff);
+
+        if(!isEmpty(buff)){
+            buff.replace(" ","");
+            resultString += "버프력 : " + buff + '\n';
         }
 
-        replier.reply(buff);
+        resultString += '\n' + "https://dunfaoff.com/SearchResult.df?server=" + serverName + "&characterid=" + charId;
 
+        replier.reply(resultString);
 
+        // data = data.select("span.bg-light");
 
+    
         // replier.reply(
         //     "https://dunfaoff.com/SearchResult.df?server=" + serverName + "&characterid=" + charId
         // );
