@@ -198,7 +198,7 @@ function findItem(itemName, replier, reinforceCnt) {
 
     if (data["rows"].length == 0) {
         replier.reply(cannotFindItemMsg);
-    } else if(data["rows"].length == 0 && !isEmpty(reinforceCnt)){
+    } else if (data["rows"].length == 0 && !isEmpty(reinforceCnt)) {
         replier.reply(cannotFindOptionItemMsg);
     } else {
         var resultString = "";
@@ -224,13 +224,13 @@ function soldItem(itemName, replier, reinforceCnt) {
     var url = '';
     var findFlag = '0';
 
-    if(isEmpty(reinforceCnt)){
+    if (isEmpty(reinforceCnt)) {
         url = 'https://api.neople.co.kr/df/auction-sold?itemName=' + itemName + '&wordType=front&apikey=' + APIkey;
     } else {
         url = 'https://api.neople.co.kr/df/auction-sold?itemName=' + itemName + '&wordType=front&q=minReinforce:' + reinforceCnt + ',maxReinforce:' +
             reinforceCnt + 'sort=unitPrice:asc&apikey=' + APIkey;
     }
-    
+
 
     data = org.jsoup.Jsoup.connect(url).ignoreContentType(true).get().text();
     data = JSON.parse(data);
@@ -251,18 +251,18 @@ function soldItem(itemName, replier, reinforceCnt) {
             } else {
 
                 resultString += "거래일시 : " + data["rows"][i]["soldDate"] + '\n' +
-                                "개당 가격 : " + commaNumberToString(data["rows"][i]["unitPrice"]) + '\n' +
-                                "총합 가격 : " + commaNumberToString(data["rows"][i]["price"] + '\n')
-                
+                    "개당 가격 : " + commaNumberToString(data["rows"][i]["unitPrice"]) + '\n' +
+                    "총합 가격 : " + commaNumberToString(data["rows"][i]["price"] + '\n')
+
                 if (findFlag == '1' || data["rows"][0]["itemType"] == '방어구' || data["rows"][0]["itemType"] == '무기' || !isEmpty(data["rows"][0]["remodelInfo"])) {
-                        if(data["rows"][0]["remodelInfo"] != null){
-                            resultString += '\n' + data["rows"][0]["remodelInfo"]["explain"];
-                            resultString += '\n' + "개조 단계 : " + data["rows"][0]["reinforce"];
-                        }
-                        
-                        var reinforce = data["rows"][0]["reinforce"];
-                        resultString += '\n' + "강화/증폭 수치 : " + reinforce
+                    if (data["rows"][0]["remodelInfo"] != null) {
+                        resultString += '\n' + data["rows"][0]["remodelInfo"]["explain"];
+                        resultString += '\n' + "개조 단계 : " + data["rows"][0]["reinforce"];
                     }
+
+                    var reinforce = data["rows"][0]["reinforce"];
+                    resultString += '\n' + "강화/증폭 수치 : " + reinforce
+                }
 
                 replier.reply(resultString);
 
@@ -293,7 +293,7 @@ function findChar(serverName, charName, replier) {
         // data = org.jsoup.Jsoup.connect(url).ignoreContentType(true).get().text();
         // data = JSON.parse(data);
         var dunfaoffUrl = "https://dunfaoff.com/CharacterSearchList.df?server=" + serverName + "&id=" + charName;
-        
+
         // var tempUrl = "https://dunfaoff.com/resources/js/char_info/holyCal.js?ver=2";
 
         // data = org.jsoup.Jsoup.connect(tempUrl)
@@ -304,7 +304,7 @@ function findChar(serverName, charName, replier) {
         //         .post()
         //         .text();
 
-        
+
         data = org.jsoup.Jsoup.connect(dunfaoffUrl).ignoreContentType(true).get();
 
         var jobData = data.select("div.card-footer a span").attr("data-jobgrowname");
@@ -317,15 +317,15 @@ function findChar(serverName, charName, replier) {
         damage = data.split("B")[0];
         // replier.reply(damage);
 
-        if(!isEmpty(damage)){
+        if (!isEmpty(damage)) {
             damage.replace(" ", "");
             resultString += "딜(오즈마 1시) : " + damage + '\n';
         }
         buff = data.split("B")[1];
         // replier.reply(buff);
 
-        if(!isEmpty(buff)){
-            buff.replace(" ","");
+        if (!isEmpty(buff)) {
+            buff.replace(" ", "");
             resultString += "버프력 : " + buff + '\n';
         }
 
@@ -335,7 +335,7 @@ function findChar(serverName, charName, replier) {
 
         // data = data.select("span.bg-light");
 
-    
+
         // replier.reply(
         //     "https://dunfaoff.com/SearchResult.df?server=" + serverName + "&characterid=" + charId
         // );
@@ -390,6 +390,68 @@ function lottoNum(array) {
         return lottoNum(array);
 }
 
+//날씨
+function selectWeather(regionName, replier) {
+    try {
+        var link = org.jsoup.Jsoup.connect("https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query=" + regionName + " 날씨").get();
+        var today_weather_mainTab = link.select("div.today_area._mainTabContent");
+
+        //메인탭
+        var today_temp_c = today_weather_mainTab.select("span.todaytemp").text();
+        //현재 기온
+        var today_temp_summary = today_weather_mainTab.select("p.cast_txt").text();
+        //날씨 요약
+
+        //최저, 최대
+        var today_temp_min = today_weather_mainTab.select("span.min");
+        var today_temp_minC = today_temp_min.select("span.num").text();
+        var today_temp_max = today_weather_mainTab.select("span.max");
+        var today_temp_maxC = today_temp_max.select("span.num").text();
+
+        //체감온도
+        var today_sensible = today_weather_mainTab.select("span.sensible");
+        var today_sensibleC = today_sensible.select("span.num").text();
+
+        //미세, 초미세먼지
+        var today_dust = today_weather_mainTab.select("dl.indicator");
+        var today_dust_data = today_dust.select("dd.lv2");
+        var today_dust_ug = today_dust_data.select("span.num").text();
+        var today_dust_final = today_dust_ug.substring(0, 5);
+
+        //if (today_dust_ug.substring(0,2) <= 30) {
+        //replier.reply(today_dust_final + " 좋음");
+        //} else if (30 < today_dust_ug.substring(0,2) <= 80) {
+        //replier.reply(today_dust_final + " 보통");
+        //} else if (80 < today_dust_ug.substring(0,2) <= 150) {
+        //replier.reply(today_dust_final + " 나쁨");
+        //} else if (today_dust_ug.substring(0,2) > 150) {
+        //replier.reply(today_dust_final + " 매우나쁨");
+        //}
+
+        //습도
+        var today_humidity = today_weather_mainTab.select("div.info_list.humidity._tabContent");
+        var today_humidity_now = today_humidity.select("li.on.now");
+        var today_humidity_percent = today_humidity_now.select("dd.weather_item._dotWrapper").text();
+
+        //강수
+        var today_rain = today_weather_mainTab.select("div.info_list.rainfall._tabContent");
+        var today_rain_now = today_rain.select("li.on.now");
+        var today_rain_percent = today_rain_now.select("dd.weather_item._dotWrapper").text();
+
+        //풍향
+        var today_wind = today_weather_mainTab.select("div.info_list.wind._tabContent");
+        var today_wind_now = today_wind.select("li.on.now");
+        var today_wind_percent = today_wind_now.select("dd.weather_item._dotWrapper").text();
+        var today_wind_direction = today_wind_now.select("span.wt_status").text();
+        //replier.reply (today_wind_direction);
+        replier.reply(regionName + "의 날씨 정보\n(출처 : 네이버)\n\n" + today_temp_summary
+            + "\n현재기온 : " + today_temp_c + "°C\n최저/최대기온 : " + today_temp_minC + "/" + today_temp_maxC + "°C\n체감온도 : " + today_sensibleC + "°C\n습도 : "
+            + today_humidity_percent + "\n강수확률 : " + today_rain_percent + "\n풍속 : " + today_wind_direction + " " + today_wind_percent);
+    } catch (e) {
+        replier.reply("에러 발생" + e);
+    }
+}
+
 
 
 
@@ -411,7 +473,7 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName)
     if (msg == "?명령어") {
         try {
             replier.reply(
-                "0. 명령어는 밑에 나온거 그대로 입력해주세요. 상세 설명있습니다.\n" +
+                "0. 명령어는 밑에 나온거 그대로 입력해주세요(예 : ?카드, ?캐릭 << 이렇게). 상세 설명있습니다.\n" +
                 "★사용법 정독 권장!!★\n\n" +
                 "1. 경매장 아이템 실시간 검색 : ?템\n" +
                 "2. 경매장 아이템 실시간 검색(카드 상세검색) : ?카드\n" +
@@ -497,6 +559,7 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName)
             "오늘의 점심추천 : ?점심, ?ㅈㅅ\n" +
             "마실거리 추천   : ?커피, ?주스, ?차\n" +
             "로또 추천번호   : ?로또, ?ㄹㄸ\n" +
+            "날씨           : ?날씨/지역명, ?ㄴㅆ/지역명 \n" +
             "개발자 용돈주기 : ?용돈"
         )
     }
@@ -676,24 +739,24 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName)
     //사이트 모음
     if (msg == "?사이트" || msg == "?ㅅㅇㅌ") {
         try {
-            var siteList =  "https://dunfaoff.com/ 던파 오프" + '\n' +
-                            "https://dnfp.xyz/ 던파 프리미엄" + '\n' +
-                            "http://dundam.xyz/던담" + '\n' +
+            var siteList = "https://dunfaoff.com/ 던파 오프" + '\n' +
+                "https://dnfp.xyz/ 던파 프리미엄" + '\n' +
+                "http://dundam.xyz/던담" + '\n' +
 
-                            "https://dnf.akaib.com/던파 아카이브" + '\n' +
-                            "http://dfset.me/ 던파셋 헬드랍" + '\n' +
-                            "http://duntoki.xyz/ 기린측정" + '\n' +
+                "https://dnf.akaib.com/던파 아카이브" + '\n' +
+                "http://dfset.me/ 던파셋 헬드랍" + '\n' +
+                "http://duntoki.xyz/ 기린측정" + '\n' +
 
-                            "http://dnfnow.xyz/ 던파 나우 경매장" + '\n' +
-                            "https://dfcat.net/던파 캣 기타 이벤트 족보" + '\n' +
-                            "http://dunp.net/char/ - 프로필 제작" + '\n' +
-                            "https://dnfa.kr/ 던파 어시스트 - 재련 강화 성공실패" + '\n' +
+                "http://dnfnow.xyz/ 던파 나우 경매장" + '\n' +
+                "https://dfcat.net/던파 캣 기타 이벤트 족보" + '\n' +
+                "http://dunp.net/char/ - 프로필 제작" + '\n' +
+                "https://dnfa.kr/ 던파 어시스트 - 재련 강화 성공실패" + '\n' +
 
-                            "https://drive.google.com/file/d/1p8ZdzW_NzGKHHOtfPTuZSr1YgSEVtYCj/view?usp=drive_open / 컴퓨터용 계산기" + '\n' +
+                "https://drive.google.com/file/d/1p8ZdzW_NzGKHHOtfPTuZSr1YgSEVtYCj/view?usp=drive_open / 컴퓨터용 계산기" + '\n' +
 
-                            "http://df.nexon.com/df/testinfo/notice?p=web 퍼섭공지" + '\n' +
+                "http://df.nexon.com/df/testinfo/notice?p=web 퍼섭공지" + '\n' +
 
-                            "http://df.nexon.com/df/news/event 던파 이벤트" + '\n';
+                "http://df.nexon.com/df/news/event 던파 이벤트" + '\n';
             replier.reply(siteList);
         }
         catch (e) {
@@ -759,6 +822,21 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName)
             lottoArr = lottoNum(lottoArr);
 
             replier.reply("이번 주 행운의 번호는\n<" + lottoArr + ">이애오");
+        }
+        catch (e) {
+            replier.reply("에러 발생" + e);
+        }
+    }
+
+    //날씨
+    if (msg.includes("?날씨") || msg.includes("?ㄴㅆ")) {
+        try {
+            var regionName = msg.split("/")[1];
+            if(isEmpty(regionName)){
+                regionName = "서울";
+            }
+
+            selectWeather(regionName, replier);
         }
         catch (e) {
             replier.reply("에러 발생" + e);
